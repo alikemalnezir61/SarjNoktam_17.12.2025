@@ -14,8 +14,8 @@ export default function AppShell() {
   const [activeTab, setActiveTab] = useState<'map' | 'favorites' | 'history' | 'profile'>('map');
   const { favorites } = useFavorites();
   const { items: stations } = useStations({});
-  const [showScanner, setShowScanner] = useState(false);
-  const [isCharging, setIsCharging] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
+    const [isCharging, setIsCharging] = useState(false);
 
   // Hook'u çağırıyoruz
   const { showAlert, showConfirm } = useModal();
@@ -162,6 +162,15 @@ export default function AppShell() {
         <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center gap-1 w-14 ${activeTab === 'profile' ? 'text-[#07B1FF]' : 'text-gray-500'}`}>
           <div className="w-6 h-6"><Icons.User /></div>
           <span className="text-[10px] font-bold">Profil</span>
+          <button onClick={() => setActiveTab('campaigns')} className={`flex flex-col items-center gap-1 w-14 ${activeTab === 'campaigns' ? 'text-green-400' : 'text-gray-500'}`}>
+            <div className="w-6 h-6">
+              {/* Campaign icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364l-1.414 1.414M6.05 17.95l-1.414 1.414M17.95 17.95l-1.414-1.414M6.05 6.05L4.636 7.464" />
+              </svg>
+            </div>
+            <span className="text-[10px] font-bold">Kampanyalar</span>
+          </button>
         </button>
       </div>
     </div>
