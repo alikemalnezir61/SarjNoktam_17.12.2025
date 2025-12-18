@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: station-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: station-service
+  template:
+    metadata:
+      labels:
+        app: station-service
+    spec:
+      containers:
+        - name: station-service
+          image: station-service:latest
+          ports:
+            - containerPort: 3003
+          env:
+            - name: PORT
+              value: "3003"
+            # Diğer environment değişkenleri
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: station-service
+spec:
+  selector:
+    app: station-service
+  ports:
+    - protocol: TCP
+      port: 3003
+      targetPort: 3003

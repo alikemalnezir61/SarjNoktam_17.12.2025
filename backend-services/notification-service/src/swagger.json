@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Notification Service API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/notifications/send": {
+      "post": {
+        "summary": "Send a notification",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" }
+                },
+                "required": ["message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notification sent"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/notifications/list": {
+      "get": {
+        "summary": "List all notifications",
+        "responses": {
+          "200": {
+            "description": "List of notifications"
+          }
+        }
+      }
+    }
+  }
+}

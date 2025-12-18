@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  user-service:
+    build: ./backend-services/user-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend-services/user-service/.env.example
+    depends_on:
+      - postgres
+      - rabbitmq
+  payment-service:
+    build: ./backend-services/payment-service
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./backend-services/payment-service/.env.example
+    depends_on:
+      - postgres
+      - rabbitmq
+  station-service:
+    build: ./backend-services/station-service
+    ports:
+      - "3003:3003"
+    env_file:
+      - ./backend-services/station-service/.env.example
+    depends_on:
+      - postgres
+      - rabbitmq
+  notification-service:
+    build: ./backend-services/notification-service
+    ports:
+      - "3004:3004"
+    env_file:
+      - ./backend-services/notification-service/.env.example
+    depends_on:
+      - postgres
+      - rabbitmq
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./api-gateway/.env.example
+    depends_on:
+      - user-service
+      - payment-service
+      - station-service
+      - notification-service
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+volumes:
+  pgdata:

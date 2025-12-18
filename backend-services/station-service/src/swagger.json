@@ -1,0 +1,47 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Station Service API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/stations/add": {
+      "post": {
+        "summary": "Add a new station",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "location": { "type": "string" }
+                },
+                "required": ["name", "location"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Station added"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/stations/list": {
+      "get": {
+        "summary": "List all stations",
+        "responses": {
+          "200": {
+            "description": "List of stations"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Gateway",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "API Gateway health check",
+        "responses": {
+          "200": {
+            "description": "API Gateway is running"
+          }
+        }
+      }
+    },
+    "/users/*": {
+      "get": {
+        "summary": "Proxy to User Service endpoints",
+        "responses": {
+          "200": {
+            "description": "User Service response"
+          }
+        }
+      }
+    },
+    "/payments/*": {
+      "get": {
+        "summary": "Proxy to Payment Service endpoints",
+        "responses": {
+          "200": {
+            "description": "Payment Service response"
+          }
+        }
+      }
+    },
+    "/stations/*": {
+      "get": {
+        "summary": "Proxy to Station Service endpoints",
+        "responses": {
+          "200": {
+            "description": "Station Service response"
+          }
+        }
+      }
+    },
+    "/notifications/*": {
+      "get": {
+        "summary": "Proxy to Notification Service endpoints",
+        "responses": {
+          "200": {
+            "description": "Notification Service response"
+          }
+        }
+      }
+    }
+  }
+}
