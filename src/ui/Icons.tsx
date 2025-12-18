@@ -1,7 +1,13 @@
+
 import React from 'react';
 
 // Tüm uygulama genelinde kullanılacak Merkezi İkon Kütüphanesi
 export const Icons = {
+  Heart: ({ className, filled }: { className?: string; filled?: boolean }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75a5.25 5.25 0 00-4.5 2.472A5.25 5.25 0 007.5 3.75C4.462 3.75 2 6.213 2 9.25c0 7.19 9.25 11 9.25 11s9.25-3.81 9.25-11c0-3.037-2.462-5.5-5.5-5.5z" />
+    </svg>
+  ),
   // --- NAVİGASYON & CORE ---
   MapPin: ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>

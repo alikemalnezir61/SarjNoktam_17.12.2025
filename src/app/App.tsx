@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import AppShell from '../screens/app/AppShell'; // <-- Doğru yol
 import LoginScreen from '../screens/auth/LoginScreen'; // <-- Doğru yol
 import { ModalProvider } from '../context/ModalContext'; // <-- Modal Merkezi
+import { FavoritesProvider } from '../context/FavoritesContext';
+import AdminRoute from './AdminRoute';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -29,11 +31,16 @@ export default function App() {
     );
   }
 
-  // --- ANA YAPI ---
+  // --- ROUTE KONTROLÜ ---
+  if (window.location.pathname.startsWith('/admin')) {
+    return <AdminRoute />;
+  }
   // Tüm uygulamayı ModalProvider ile sarıyoruz ki her yerden pop-up açabilelim
   return (
-    <ModalProvider>
-      {!isAuthenticated ? <LoginScreen /> : <AppShell />}
-    </ModalProvider>
+    <FavoritesProvider>
+      <ModalProvider>
+        {!isAuthenticated ? <LoginScreen /> : <AppShell />}
+      </ModalProvider>
+    </FavoritesProvider>
   );
 }

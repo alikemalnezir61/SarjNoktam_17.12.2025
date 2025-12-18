@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useStations } from '../../hooks/useStations';
 import { Icons } from '../../ui/Icons';
-import { useModal } from '../../context/ModalContext'; // <--- IMPORT
+import { useModal } from '../../context/ModalContext';
+import { useFavorites } from '../../context/FavoritesContext';
 
 export default function ListView() {
   const [search, setSearch] = useState("");
@@ -9,6 +10,7 @@ export default function ListView() {
   const { items: stations, loading } = useStations({ search });
   const { showAlert } = useModal(); // <--- HOOK
 
+  const { isFavorite, toggleFavorite } = useFavorites();
   // Sıralama fonksiyonu
   const sortedStations = useMemo(() => {
     const arr = [...stations];
@@ -59,7 +61,19 @@ export default function ListView() {
         {sortedStations.map((station) => (
           <div key={station.id} className="group bg-[#1e293b]/50 backdrop-blur-md border border-white/5 rounded-2xl p-4 shadow-lg hover:border-[#07B1FF]/50 transition-all duration-300">
             <div className="flex justify-between items-start mb-3">
-              <div><h3 className="text-white font-bold text-lg leading-tight">{station.name}</h3><div className="flex items-center text-gray-400 text-xs mt-1.5"><Icons.MapPin className="w-3 h-3 mr-1" /><span>{station.distKm?.toFixed(1)} km • {station.address || "İstanbul"}</span></div></div>
+              <div>
+                <h3 className="text-white font-bold text-lg leading-tight flex items-center gap-2">
+                  {station.name}
+                  <button
+                    onClick={() => toggleFavorite(station.id)}
+                    className="ml-1 p-1 rounded-full hover:bg-pink-500/10 transition-colors"
+                    title={isFavorite(station.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                  >
+                    <Icons.Heart className={isFavorite(station.id) ? 'w-5 h-5 text-pink-400' : 'w-5 h-5 text-gray-400'} filled={isFavorite(station.id)} />
+                  </button>
+                </h3>
+                <div className="flex items-center text-gray-400 text-xs mt-1.5"><Icons.MapPin className="w-3 h-3 mr-1" /><span>{station.distKm?.toFixed(1)} km • {station.address || "İstanbul"}</span></div>
+              </div>
               <div className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${station.status === 'AVAILABLE' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>{station.status === 'AVAILABLE' ? 'Müsait' : 'Dolu'}</div>
             </div>
             <div className="flex items-center justify-between pt-3 border-t border-white/5 mt-2">

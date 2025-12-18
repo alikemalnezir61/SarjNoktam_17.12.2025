@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
+import ListView from "./ListView";
+import GeminiChatBar from "../../ui/GeminiChatBar";
 import { Icons } from "../../ui/Icons";
 import { useStations, type Station } from "../../hooks/useStations";
+import { useFavorites } from '../../context/FavoritesContext';
 import { useModal } from "../../context/ModalContext";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, ZoomControl, useMap } from 'react-leaflet';
@@ -47,11 +50,25 @@ function FlyTo({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number }) 
 }
 
 export default function MapView({ onStartCharge }: MapViewProps) {
+  const [chatQ, setChatQ] = useState("");
+  const [chatA, setChatA] = useState("");
+  const [query, setQuery] = useState("");
   const { items: stations } = useStations({});
   const { showConfirm } = useModal();
-  const [query, setQuery] = useState("");
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
-  const [mode, setMode] = useState<'free' | 'nav'>('free');
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [mapMode, setMapMode] = useState<'free' | 'nav'>('free');
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  // Gemini API ile entegrasyon burada yapılacak (şimdilik sahte cevap)
+  const handleGeminiSend = async (q: string) => {
+    setChatQ(q);
+    setChatA("Yükleniyor...");
+    // TODO: Burada gerçek Gemini API çağrısı yapılacak
+    setTimeout(() => {
+      setChatA("(Demo cevap) Şarjlı araçlar hakkında bilgi: " + q);
+    }, 1200);
+  };
 
   const filtered = stations.filter((s) => s.name.toLowerCase().includes(query.toLowerCase()));
   const center: [number, number] = stations.length ? [stations[0].lat, stations[0].lng] : [41.01, 28.97];
@@ -63,9 +80,68 @@ export default function MapView({ onStartCharge }: MapViewProps) {
     return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size / 2, size] });
   };
 
+  // Eğer viewMode 'list' ise sadece ListView'u göster
+  if (viewMode === 'list') {
+    return (
+      <div className="relative h-full w-full bg-[#0b1220]">
+        <div className="absolute top-3 right-4 z-50 flex gap-2">
+          <button
+            className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 bg-[#071126] text-white/80 hover:bg-[#0b1a2a]`}
+            onClick={() => setViewMode('map')}
+          >
+            Harita
+          </button>
+          <button
+            className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 bg-[#07B1FF] text-black`}
+            disabled
+          >
+            Liste
+          </button>
+        </div>
+        <ListView />
+        {/* Arama barı */}
+        <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-40 pointer-events-auto w-full px-4 max-w-lg">
+          <div className="flex items-center bg-[#071022]/70 backdrop-blur-md rounded-full px-3 py-2 shadow-lg border border-white/10">
+            <Icons.Search className="w-5 h-5 text-gray-300 mr-2" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="İstasyon ara..." className="flex-1 bg-transparent outline-none text-white placeholder-gray-400" />
+            {query && (
+              <button onClick={() => setQuery("")} className="text-gray-400 ml-2"><Icons.X className="w-4 h-4" /></button>
+            )}
+          </div>
+        </div>
+        <GeminiChatBar onSend={handleGeminiSend} />
+        {chatQ && (
+          <div className="fixed bottom-44 left-1/2 -translate-x-1/2 w-full max-w-xl z-50 px-4">
+            <div className="bg-[#222c3a] border border-[#07B1FF]/30 rounded-2xl p-4 text-white shadow-xl animate-in fade-in duration-300">
+              <div className="text-xs text-[#07B1FF] mb-1">Soru:</div>
+              <div className="font-bold mb-2">{chatQ}</div>
+              <div className="text-xs text-[#07B1FF] mb-1 mt-2">Cevap:</div>
+              <div>{chatA}</div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-full w-full bg-[#0b1220]">
-      {/* Search bar placed on top of the map */}
+      {/* Sağ üstte Harita/Liste butonları */}
+      <div className="absolute top-3 right-4 z-50 flex gap-2">
+        <button
+          className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 ${viewMode === 'map' ? 'bg-[#07B1FF] text-black' : 'bg-[#071126] text-white/80 hover:bg-[#0b1a2a]'}`}
+          onClick={() => setViewMode('map')}
+        >
+          Harita
+        </button>
+        <button
+          className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 ${viewMode === 'list' ? 'bg-[#07B1FF] text-black' : 'bg-[#071126] text-white/80 hover:bg-[#0b1a2a]'}`}
+          onClick={() => setViewMode('list')}
+        >
+          Liste
+        </button>
+      </div>
+      {/* Arama barı */}
       <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-40 pointer-events-auto w-full px-4 max-w-lg">
         <div className="flex items-center bg-[#071022]/70 backdrop-blur-md rounded-full px-3 py-2 shadow-lg border border-white/10">
           <Icons.Search className="w-5 h-5 text-gray-300 mr-2" />
@@ -75,6 +151,7 @@ export default function MapView({ onStartCharge }: MapViewProps) {
           )}
         </div>
       </div>
+      <GeminiChatBar onSend={handleGeminiSend} />
       {/* Harita kutusu tam ekran (alt bar hariç) */}
       <MapContainer
         center={center}
@@ -109,6 +186,18 @@ export default function MapView({ onStartCharge }: MapViewProps) {
         })}
         {selectedStation && <FlyTo lat={selectedStation.lat} lng={selectedStation.lng} zoom={15} />}
       </MapContainer>
+      {/* Gemini Sohbet Barı */}
+      <GeminiChatBar onSend={handleGeminiSend} />
+      {chatQ && (
+        <div className="fixed bottom-44 left-1/2 -translate-x-1/2 w-full max-w-xl z-50 px-4">
+          <div className="bg-[#222c3a] border border-[#07B1FF]/30 rounded-2xl p-4 text-white shadow-xl animate-in fade-in duration-300">
+            <div className="text-xs text-[#07B1FF] mb-1">Soru:</div>
+            <div className="font-bold mb-2">{chatQ}</div>
+            <div className="text-xs text-[#07B1FF] mb-1 mt-2">Cevap:</div>
+            <div>{chatA}</div>
+          </div>
+        </div>
+      )}
       {/* DETAIL CARD */}
       {selectedStation && (
         <div className="absolute bottom-0 left-0 w-full z-50">
@@ -116,11 +205,20 @@ export default function MapView({ onStartCharge }: MapViewProps) {
             <div className="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-4 opacity-60" />
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#071126] to-[#072b3a] p-2 flex items-center justify-center shadow-xl border border-white/10 overflow-hidden">
+                <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#071126] to-[#072b3a] p-2 flex items-center justify-center shadow-xl border border-white/10 overflow-hidden">
                   <BrandLogo brand={getStationBrand(selectedStation.name)} name={selectedStation.name} size={56} />
+                  <button
+                    onClick={() => toggleFavorite(selectedStation.id)}
+                    className="absolute top-1 right-1 p-1 rounded-full bg-[#0B0F17]/80 hover:bg-pink-500/20 transition-colors"
+                    title={isFavorite(selectedStation.id) ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                  >
+                    <Icons.Heart className={isFavorite(selectedStation.id) ? 'w-6 h-6 text-pink-400' : 'w-6 h-6 text-gray-400'} filled={isFavorite(selectedStation.id)} />
+                  </button>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white leading-tight">{selectedStation.name}</h3>
+                  <h3 className="text-xl font-bold text-white leading-tight">
+                    {selectedStation.name}
+                  </h3>
                   <div className="text-sm text-gray-400 mt-1 flex items-center gap-2"><Icons.MapPin className="w-4 h-4 text-[#07B1FF]" />{selectedStation.address || 'Konum'}</div>
                 </div>
               </div>
