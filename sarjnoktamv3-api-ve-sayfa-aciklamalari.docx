@@ -1,0 +1,92 @@
+# SarjNoktamV3 API ve Sayfa Açıklamaları
+
+## API Endpointleri ve Amaçları
+
+### Genel API Gateway
+- **/api/** : Tüm frontend isteklerinin geçtiği ana giriş noktası. Rate limiting, authentication, logging burada yapılır.
+
+### Kullanıcı ve Kimlik Doğrulama
+- **/api/user/login** : Kullanıcı girişi (JWT döner)
+- **/api/user/register** : Yeni kullanıcı kaydı
+- **/api/user/profile** : Kullanıcı profil bilgileri
+- **/api/user/favorites** : Kullanıcının favori istasyonları
+- **/api/user/vehicle** : Kullanıcının araç bilgisi (batarya, menzil)
+- **/api/user/carbon-footprint** : Karbon ayak izi analizi
+
+### İstasyon ve Harita
+- **/api/stations** : Tüm istasyonların listesi
+- **/api/stations/:id** : Belirli istasyonun detayları
+- **/api/stations/reviews** : İstasyon yorumları
+- **/api/stations/reserve** : İstasyon için rezervasyon
+- **/api/stations/payment** : İstasyon için ödeme işlemi
+- **/api/stations/occupancy** : Doluluk tahmini
+
+### Fiyat ve Karşılaştırma
+- **/api/prices** : Fiyat karşılaştırma verileri
+
+### Bildirimler ve Gamification
+- **/api/notifications** : Kullanıcıya bildirim gönderme/alma
+- **/api/gamification** : Rozet, seviye, ödül işlemleri
+
+### Diğer
+- **/api/export** : Kullanıcı verilerini dışa aktarma
+- **/api/encrypt /api/decrypt** : Şifreleme işlemleri
+- **/api/feature-flags** : Özellik bayrakları (A/B test, yeni modül açma)
+- **/api/ai** : Yapay zeka destekli öneri ve sohbet
+
+---
+
+## Frontend Sayfaları ve Amaçları
+
+### Ana Sayfa (MapView)
+- Harita üzerinde istasyonları, fiyatları, doluluk durumunu gösterir.
+- Sol/sağ açılır butonlar ile modüllere erişim sağlar.
+
+### Fiyat Karşılaştırma (PriceComparison)
+- Seçili istasyonlar arasında fiyat ve hizmet karşılaştırması yapılır.
+
+### Seyahat Planlama (TravelPlanner)
+- Başlangıç ve varış noktası girilerek rota ve şarj durakları önerilir.
+
+### Akıllı Öneriler (StationSuggestions)
+- Kullanıcıya geçmiş tercihlerine göre istasyon ve rota önerileri sunar.
+
+### Araç Bilgisi (VehicleInfo)
+- Kullanıcı aracının batarya ve menzil bilgilerini girer, API ile günceller.
+
+### Karbon Analizi (CarbonAnalysis)
+- Yapılan yolculuk için karbon ayak izi ve tasarruf analizi yapılır.
+
+### Favoriler (FavoritesList)
+- Sık kullanılan istasyonlar favorilere eklenir ve yönetilir.
+
+### Yorumlar (StationReviews)
+- İstasyonlara yorum ve puan verilir.
+
+### Rezervasyon (StationReservation)
+- İstasyon için önceden rezervasyon yapılır.
+
+### Ödeme (StationPayment)
+- Online ödeme ve fatura işlemleri yapılır.
+
+### Gamification (UserGamification)
+- Kullanıcıya rozet, seviye ve ödül sistemi sunar.
+
+### Bildirimler (Notifications)
+- Anlık bildirim ve uyarılar gösterilir.
+
+### Doluluk Tahmini (OccupancyForecast)
+- İstasyonların tahmini doluluk oranı ve yoğunluk analizi sunulur.
+
+### Gizlilik ve KVKK (PrivacySettings)
+- Kişisel veri yönetimi ve kullanıcı izinleri ayarlanır.
+
+### Veri Dışa Aktarma (DataExport)
+- Kullanıcı verileri dışa aktarılır.
+
+### Şifreleme (CryptoSettings)
+- Hassas veriler şifrelenir ve yönetilir.
+
+---
+
+Her API ve sayfa, kullanıcıya daha iyi bir deneyim ve güvenli, hızlı bir hizmet sunmak için modüler olarak tasarlanmıştır. Daha fazla teknik detay veya örnek kod isterseniz belirtin.

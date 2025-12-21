@@ -1,0 +1,73 @@
+# SarjNoktamV3 Uygulama Dokümantasyonu
+
+## Genel Bakış
+SarjNoktamV3, elektrikli araç kullanıcıları için şarj istasyonu bulma, fiyat karşılaştırma, seyahat planlama, topluluk, bildirim, ödeme ve daha birçok yenilikçi özelliği bir arada sunan modern bir web uygulamasıdır. Uygulama hem frontend (React/TypeScript) hem de backend (Node.js/Express, PHP, microservices) olarak modüler ve ölçeklenebilir şekilde tasarlanmıştır.
+
+---
+
+## Frontend
+- **Teknoloji:** React, TypeScript, Vite, TailwindCSS
+- **Yapı:**
+  - `src/screens/app/MapView.tsx`: Ana harita ve istasyon yönetimi, sol/sağ açılır butonlar, modallar
+  - `src/screens/app/PriceComparison.tsx`, `StationSuggestions.tsx`, `VehicleInfo.tsx`, `CarbonAnalysis.tsx`, `FavoritesList.tsx`, `StationReviews.tsx`, `StationReservation.tsx`, `StationPayment.tsx`, `UserGamification.tsx`, `Notifications.tsx`, `OccupancyForecast.tsx`, `PrivacySettings.tsx`, `DataExport.tsx`, `CryptoSettings.tsx`: Her biri ayrı modül ve modal olarak
+  - `src/ui/Icons.tsx`: Modern ikonlar
+  - `src/context/`: Uygulama genelinde context yönetimi (favoriler, modal, kullanıcı)
+  - `src/hooks/`: API ve veri çekme için özel hooklar
+  - `src/app/`: Uygulama ana çerçevesi, route yönetimi
+  - `public/`: Statik dosyalar, HTML, logolar
+- **Özellikler:**
+  - Harita üzerinde istasyonlar, fiyat karşılaştırma, öneriler, araç bilgisi, karbon analizi, favoriler, yorumlar, rezervasyon, ödeme, gamification, bildirimler, doluluk tahmini, gizlilik, veri dışa aktarma, şifreleme
+  - Modern, ikonlu, açılır menüler ve butonlar
+  - Responsive ve kullanıcı dostu arayüz
+  - API ile gerçek zamanlı veri
+
+---
+
+## Backend
+- **Teknoloji:**
+  - Node.js/Express (api-gateway)
+  - PHP (backend/src/)
+  - Microservices: notification-service, payment-service, station-service, user-service (her biri ayrı Node.js tabanlı)
+  - Ortak kütüphaneler: backend-services/common/libs
+- **Yapı:**
+  - `api-gateway/`: Tüm frontend API isteklerinin geçtiği ana giriş noktası, rate limiting, feature flag, sentry, quota, tracing, swagger
+  - `backend/`: PHP tabanlı eski API, admin ve temel endpointler
+  - `backend-services/`: Her servis için ayrı klasör (notification, payment, station, user)
+  - `infra/`: CI/CD, k8s, logging, monitoring, consul config, deployment yaml’ları
+  - `docs/`: Mimari ve teknik dökümantasyon
+- **Özellikler:**
+  - REST ve GraphQL API desteği
+  - JWT tabanlı authentication
+  - Rate limiting, quota, sentry ile hata/log yönetimi
+  - Swagger/OpenAPI ile dokümantasyon
+  - Docker ve Kubernetes ile ölçeklenebilir deployment
+  - Prometheus, Grafana, ELK ile monitoring/loglama
+  - KVKK/GDPR uyumlu veri yönetimi
+
+---
+
+## Entegrasyonlar ve Güvenlik
+- **CI/CD:** GitHub Actions, otomatik test ve deploy pipeline’ı
+- **Güvenlik:**
+  - HTTPS, SSL, güvenli ortam değişkenleri
+  - API rate limiting, brute force koruması
+  - Loglama ve merkezi monitoring
+  - Yedekleme ve rollback scriptleri
+  - DDoS ve bot koruması (Cloudflare, WAF)
+
+---
+
+## Kullanıcı Akışı
+1. Kullanıcı harita üzerinden istasyonları ve fiyatları görür.
+2. Seyahat planlama, öneri, favori, yorum, rezervasyon, ödeme gibi modülleri kullanır.
+3. Tüm işlemler API-gateway üzerinden backend microservislere iletilir.
+4. Bildirimler, gamification, veri dışa aktarma ve şifreleme gibi ek modüller ile kullanıcı deneyimi zenginleştirilir.
+
+---
+
+## Ek Notlar
+- Kod ve mimari tamamen modülerdir, yeni servis veya modül kolayca eklenebilir.
+- Tüm frontend ve backend kodları versiyon kontrollüdür.
+- Geliştirici dökümantasyonu ve canlıya geçiş rehberi proje içinde mevcuttur.
+
+Daha fazla teknik detay veya örnek kod isterseniz belirtin.

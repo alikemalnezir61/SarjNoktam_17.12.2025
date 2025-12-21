@@ -1,0 +1,65 @@
+# Canlı Ortama Geçiş
+
+## 1. Kod Temizliği ve Testler
+- Tüm birim ve entegrasyon testlerini çalıştır, hataları düzelt.
+- Kodda hardcoded şifre, anahtar, gizli bilgi bırakma.
+- Linter ve formatlayıcı ile kodu temizle.
+
+## 2. Versiyon Kontrolü ve CI/CD Pipeline
+- Git branch koruma kuralları uygula.
+- GitHub Actions veya benzeri ile otomatik test, build ve deploy pipeline’ı kur.
+- Pipeline’da testler geçmeden deploy’a izin verme.
+
+## 3. Ortam Değişkenleri ve Secrets Yönetimi
+- .env dosyalarını .gitignore’a ekle.
+- Secrets’ı (API key, DB şifre) sadece CI/CD ortamında tanımla.
+- Gerekirse Vault veya benzeri bir secret manager kullan.
+
+## 4. Docker/K8s ile İzole Deployment
+- Tüm servisler için Dockerfile oluştur.
+- docker-compose veya Kubernetes manifest dosyalarını hazırla.
+- Local/staging/prod için ayrı configler kullan.
+
+## 5. HTTPS Zorunluluğu
+- SSL sertifikası al (Let’s Encrypt, Cloudflare vb.).
+- Tüm trafik için HTTPS yönlendirmesi uygula.
+- API ve frontend için ayrı sertifika gerekirse ayır.
+
+## 6. Sunucu Güvenlik Duvarı ve Port Yönetimi
+- Sadece gerekli portları aç (ör. 80, 443, 22).
+- SSH için key tabanlı giriş ve brute force koruması uygula.
+- Sunucuya root ile doğrudan giriş engelle.
+
+## 7. Loglama ve Monitoring
+- Uygulama hatalarını Sentry veya benzeri ile topla.
+- Sunucu ve servis metriklerini Prometheus/Grafana ile izle.
+- Logları merkezi bir yerde (ELK, Loki) sakla.
+
+## 8. Rate Limiting ve Brute Force Koruması
+- API Gateway veya middleware ile rate limit uygula.
+- Login/register endpointlerinde brute force koruması ekle.
+- Gerekirse Captcha entegre et.
+
+## 9. Yedekleme ve Felaket Kurtarma
+- Veritabanı ve önemli dosyalar için otomatik yedekleme kur.
+- Yedeklerin çalıştığını düzenli test et.
+- Rollback için deployment scripti hazırla.
+
+## 10. KVKK/GDPR Uyumluluğu
+- Kullanıcıdan açık rıza al.
+- Kişisel verileri şifreli ve erişimi kısıtlı tut.
+- Kullanıcı verisi silme ve dışa aktarma fonksiyonu ekle.
+
+## 11. DDoS ve Bot Koruması
+- Cloudflare veya benzeri WAF kullan.
+- API ve frontend için rate limit ve IP ban uygula.
+- Gerekirse anti-bot JS challenge ekle.
+
+## 12. Staging ve Son Testler
+- Canlıya çıkmadan staging ortamında tüm akışları test et.
+- Son kullanıcı testleri ve onay al.
+- Canlıya geçişi kontrollü ve rollback’li yap.
+
+---
+
+Her adım tamamlandıkça bir sonrakine geç. Detaylı komut, config veya kod örneği için ilgili adımı belirtin.

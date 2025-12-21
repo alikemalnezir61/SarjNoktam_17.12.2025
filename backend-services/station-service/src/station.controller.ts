@@ -1,3 +1,17 @@
+import express from 'express';
+const router = express.Router();
+
+// Gerçek zamanlı doluluk ve arıza bilgisi için mock endpoint
+router.get('/status', (req, res) => {
+  const stations = [
+    { id: 1, name: 'ZES Sirkeci', status: 'AVAILABLE', busy: false, offline: false },
+    { id: 2, name: 'Eşarj Bolu', status: 'BUSY', busy: true, offline: false },
+    { id: 3, name: 'Tesla Ankara', status: 'OFFLINE', busy: false, offline: true },
+  ];
+  res.json(stations);
+});
+
+export default router;
 import { Request, Response } from 'express';
 import { addStation, listStations } from './station.service';
 

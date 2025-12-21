@@ -13,6 +13,12 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 import '../../styles/markercluster.css';
 import L from 'leaflet';
 import { Polyline } from 'react-leaflet';
+import StationReviews from './StationReviews';
+import StationReservation from './StationReservation';
+import StationPayment from './StationPayment';
+import PriceComparison from './PriceComparison';
+import StationSuggestions from './StationSuggestions';
+import TripGroups from './TripGroups';
 
 type MapViewProps = {
   onStartCharge?: () => void;
@@ -55,6 +61,20 @@ function FlyTo({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number }) 
 }
 
 export default function MapView({ onStartCharge }: MapViewProps) {
+  const [activeRightBar, setActiveRightBar] = useState<string | null>(null);
+        const [batteryLevel, setBatteryLevel] = useState(80);
+        const [showPriceModal, setShowPriceModal] = useState(false);
+        const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+        const [showTripGroupsModal, setShowTripGroupsModal] = useState(false);
+        const [activeBar, setActiveBar] = useState<string | null>(null);
+        const [showVehicleModal, setShowVehicleModal] = useState(false);
+        const [showCarbonModal, setShowCarbonModal] = useState(false);
+        const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+      const [routeStations, setRouteStations] = useState<Station[]>([]);
+      const [routePolyline, setRoutePolyline] = useState<Array<[number, number]>>([]);
+    const [showTravelModal, setShowTravelModal] = useState(false);
+    const [routeStart, setRouteStart] = useState("");
+    const [routeEnd, setRouteEnd] = useState("");
   const [chatQ, setChatQ] = useState("");
   const [chatA, setChatA] = useState("");
   const [query, setQuery] = useState("");
@@ -62,21 +82,27 @@ export default function MapView({ onStartCharge }: MapViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterPrice, setFilterPrice] = useState<[number, number] | null>(null);
   const [filterBrand, setFilterBrand] = useState('');
-  const { items: stations } = useStations({});
   const { showConfirm } = useModal();
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const { isFavorite, toggleFavorite } = useFavorites();
   const userLocation: [number, number] = [41.0082, 28.9784];
   const [navMode, setNavMode] = useState(false);
-  const [stationsData, setStationsData] = useState(stations);
+  const [stationsData, setStationsData] = useState<Station[]>([]);
 
-  // Canlı güncelleme için polling
+  // Gerçek zamanlı istasyon durumu çekme
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Burada gerçek API'den veri çekilecek, şimdilik mock ile güncelliyoruz
-      setStationsData([...useStations({}).items]);
-    }, 10000); // 10 saniyede bir güncelle
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        setStationsData(data);
+      } catch (err) {
+        // Hata durumunda eski veriyi koru
+      }
+    }
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 10000); // 10 saniyede bir güncelle
     return () => clearInterval(interval);
   }, []);
 
@@ -98,7 +124,7 @@ export default function MapView({ onStartCharge }: MapViewProps) {
     if (filterBrand) match = match && getStationBrand(s.name).id === filterBrand;
     return match;
   });
-  const center: [number, number] = stations.length ? [stations[0].lat, stations[0].lng] : [41.01, 28.97];
+  const center: [number, number] = stationsData.length ? [stationsData[0].lat, stationsData[0].lng] : [41.01, 28.97];
 
   const makeDivIcon = (logo?: string, size = 52) => {
     const html = logo
@@ -153,33 +179,175 @@ export default function MapView({ onStartCharge }: MapViewProps) {
 
   return (
     <div className="relative h-full w-full bg-[#0b1220]">
-      {/* Sağ üstte Harita/Liste butonları ve legend */}
-      <div className="absolute top-3 right-4 z-50 flex flex-col items-end gap-2">
-        <div className="flex gap-2 mb-2">
-          <button
-            className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 ${viewMode === 'map' ? 'bg-[#07B1FF] text-black' : 'bg-[#071126] text-white/80 hover:bg-[#0b1a2a]'}`}
-            onClick={() => setViewMode('map')}
-          >
-            Harita
-          </button>
-          <button
-            className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 ${viewMode === 'list' ? 'bg-[#07B1FF] text-black' : 'bg-[#071126] text-white/80 hover:bg-[#0b1a2a]'}`}
-            onClick={() => setViewMode('list')}
-          >
-            Liste
-          </button>
-        </div>
-        {/* Legend */}
-        <div className="bg-[#071126]/90 rounded-xl px-3 py-2 shadow border border-white/10 flex flex-row gap-3 text-xs text-white overflow-x-auto">
-          <div className="font-bold text-[#07B1FF] mb-1">Açıklama</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-400 inline-block"></span> Müsait</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Dolu</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-gray-500 inline-block"></span> Bakım</div>
-          <div className="flex items-center gap-2"><img src="/logos/zes.svg" alt="ZES" className="w-5 h-5"/> ZES</div>
-          <div className="flex items-center gap-2"><img src="/logos/esarj.svg" alt="Eşarj" className="w-5 h-5"/> Eşarj</div>
-          <div className="flex items-center gap-2"><img src="/logos/tesla.svg" alt="Tesla" className="w-5 h-5"/> Tesla</div>
+      {/* Sol dikey butonlar */}
+      <div className="fixed top-28 left-4 z-50 flex flex-col gap-3 pointer-events-none">
+        <div className="flex flex-col gap-3 pointer-events-auto">
+                  <div className="group relative flex">
+                    <button
+                      className={`flex items-center justify-center w-12 h-12 rounded-full bg-[#0B0F17] shadow-lg border border-[#07B1FF]/20 text-white hover:bg-[#07B1FF]/90 hover:text-black transition-all duration-150`}
+                      onClick={() => { setShowTravelModal(true); setActiveBar('travel'); }}
+                      onMouseEnter={() => setActiveBar('travel')}
+                      onMouseLeave={() => setActiveBar(null)}
+                    >
+                      <Icons.MapPin className="w-6 h-6" />
+                    </button>
+                    <span className={`absolute left-14 top-1/2 -translate-y-1/2 bg-[#0B0F17] text-white px-3 py-1 rounded shadow-lg border border-[#07B1FF]/20 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${activeBar==='travel' ? 'opacity-100 visible' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'}`}>Seyahat Planla</span>
+                  </div>
+          <div className="group relative flex">
+            <button
+              className={`flex items-center justify-center w-12 h-12 rounded-full bg-[#0B0F17] shadow-lg border border-[#07B1FF]/20 text-white hover:bg-[#07B1FF]/90 hover:text-black transition-all duration-150`}
+              onClick={() => { setShowPriceModal(true); setActiveBar('price'); }}
+              onMouseEnter={() => setActiveBar('price')}
+              onMouseLeave={() => setActiveBar(null)}
+            >
+              <Icons.TrendingUp className="w-6 h-6" />
+            </button>
+            <span className={`absolute left-14 top-1/2 -translate-y-1/2 bg-[#0B0F17] text-white px-3 py-1 rounded shadow-lg border border-[#07B1FF]/20 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${activeBar==='price' ? 'opacity-100 visible' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'}`}>Fiyat Karşılaştır</span>
+          </div>
+          <div className="group relative flex">
+            <button
+              className={`flex items-center justify-center w-12 h-12 rounded-full bg-[#0B0F17] shadow-lg border border-[#07B1FF]/20 text-white hover:bg-[#07B1FF]/90 hover:text-black transition-all duration-150`}
+              onClick={() => { setShowSuggestionsModal(true); setActiveBar('suggest'); }}
+              onMouseEnter={() => setActiveBar('suggest')}
+              onMouseLeave={() => setActiveBar(null)}
+            >
+              <Icons.Star className="w-6 h-6" />
+            </button>
+            <span className={`absolute left-14 top-1/2 -translate-y-1/2 bg-[#0B0F17] text-white px-3 py-1 rounded shadow-lg border border-[#07B1FF]/20 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${activeBar==='suggest' ? 'opacity-100 visible' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'}`}>Akıllı Öneriler</span>
+          </div>
+          <div className="group relative flex">
+            <button
+              className={`flex items-center justify-center w-12 h-12 rounded-full bg-[#0B0F17] shadow-lg border border-[#07B1FF]/20 text-white hover:bg-[#07B1FF]/90 hover:text-black transition-all duration-150`}
+              onClick={() => { setShowVehicleModal(true); setActiveBar('vehicle'); }}
+              onMouseEnter={() => setActiveBar('vehicle')}
+              onMouseLeave={() => setActiveBar(null)}
+            >
+              <Icons.Car className="w-6 h-6" />
+            </button>
+            <span className={`absolute left-14 top-1/2 -translate-y-1/2 bg-[#0B0F17] text-white px-3 py-1 rounded shadow-lg border border-[#07B1FF]/20 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${activeBar==='vehicle' ? 'opacity-100 visible' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'}`}>Araç Bilgisi</span>
+          </div>
+          <div className="group relative flex">
+            <button
+              className={`flex items-center justify-center w-12 h-12 rounded-full bg-[#0B0F17] shadow-lg border border-[#07B1FF]/20 text-white hover:bg-[#07B1FF]/90 hover:text-black transition-all duration-150`}
+              onClick={() => { setShowCarbonModal(true); setActiveBar('carbon'); }}
+              onMouseEnter={() => setActiveBar('carbon')}
+              onMouseLeave={() => setActiveBar(null)}
+            >
+              <Icons.Leaf className="w-6 h-6" />
+            </button>
+            <span className={`absolute left-14 top-1/2 -translate-y-1/2 bg-[#0B0F17] text-white px-3 py-1 rounded shadow-lg border border-[#07B1FF]/20 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${activeBar==='carbon' ? 'opacity-100 visible' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'}`}>Karbon Analizi</span>
+          </div>
+              {/* Karbon Analizi Modalı */}
+              {showCarbonModal && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
+                  <div className="bg-[#0B0F17] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+                    <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => { setShowCarbonModal(false); setActiveBar(null); }}>
+                      <Icons.X className="w-6 h-6" />
+                    </button>
+                    <CarbonAnalysis userId={"1"} />
+                  </div>
+                </div>
+              )}
         </div>
       </div>
+      {/* Araç Bilgisi Modalı */}
+      {showVehicleModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
+          <div className="bg-[#0B0F17] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => { setShowVehicleModal(false); setActiveBar(null); }}>
+              <Icons.X className="w-6 h-6" />
+            </button>
+            <VehicleInfo userId={"1"} />
+          </div>
+        </div>
+      )}
+
+      {/* Fiyat Karşılaştırma Modalı */}
+      {showPriceModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
+          <div className="bg-[#0B0F17] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => { setShowPriceModal(false); setActiveBar(null); }}>
+              <Icons.X className="w-6 h-6" />
+            </button>
+            <PriceComparison />
+          </div>
+        </div>
+      )}
+
+      {/* Akıllı İstasyon Önerileri Modalı */}
+      {showSuggestionsModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
+          <div className="bg-[#0B0F17] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => { setShowSuggestionsModal(false); setActiveBar(null); }}>
+              <Icons.X className="w-6 h-6" />
+            </button>
+            <StationSuggestions userId={"1"} />
+          </div>
+        </div>
+      )}
+
+      {/* Topluluk Yolculukları Modalı (şimdilik kaldırıldı) */}
+      {/* Butonlar filtre barının altında, alt alta ve sağa hizalı */}
+      <div className="absolute right-4 z-40 flex flex-col items-end gap-2" style={{top: 90}}>
+        <button
+          className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 ${viewMode === 'map' ? 'bg-[#07B1FF] text-black' : 'bg-[#071126] text-white/80 hover:bg-[#0b1a2a]'}`}
+          onClick={() => setViewMode('map')}
+        >
+          Harita
+        </button>
+        <button
+          className={`px-4 py-2 rounded-full font-bold text-xs shadow-lg border border-white/10 transition-all duration-150 ${viewMode === 'list' ? 'bg-[#07B1FF] text-black' : 'bg-[#071126] text-white/80 hover:bg-[#0b1a2a]'}`}
+          onClick={() => setViewMode('list')}
+        >
+          Liste
+        </button>
+      </div>
+            {/* Seyahat Planlama Modalı */}
+            {showTravelModal && (
+              <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
+                <div className="bg-[#0B0F17] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+                  <button className="absolute top-3 right-3 text-gray-400 hover:text-white" onClick={() => setShowTravelModal(false)}>
+                    <Icons.X className="w-6 h-6" />
+                  </button>
+                  <h2 className="text-xl font-bold text-[#07B1FF] mb-4">Seyahat Planlama</h2>
+                  <form className="flex flex-col gap-4">
+                    <div>
+                      <label className="text-sm text-white mb-1 block">Başlangıç Noktası</label>
+                      <input type="text" value={routeStart} onChange={e => setRouteStart(e.target.value)} placeholder="Örn: İstanbul" className="w-full px-3 py-2 rounded bg-[#071126] text-white" />
+                    </div>
+                    <div>
+                      <label className="text-sm text-white mb-1 block">Varış Noktası</label>
+                      <input type="text" value={routeEnd} onChange={e => setRouteEnd(e.target.value)} placeholder="Örn: Ankara" className="w-full px-3 py-2 rounded bg-[#071126] text-white" />
+                    </div>
+                    <div>
+                      <label className="text-sm text-white mb-1 block">Batarya Seviyesi (%)</label>
+                      <input type="number" min={0} max={100} value={batteryLevel} onChange={e => setBatteryLevel(Number(e.target.value))} className="w-full px-3 py-2 rounded bg-[#071126] text-white" />
+                    </div>
+                    <button type="button" className="mt-2 py-2 rounded bg-[#07B1FF] text-black font-bold" onClick={async () => {
+                      // Mock koordinatlar
+                      const start = routeStart.toLowerCase().includes('istanbul') ? [41.0082, 28.9784] : [41.0082, 28.9784];
+                      const end = routeEnd.toLowerCase().includes('ankara') ? [39.9334, 32.8597] : [39.9334, 32.8597];
+                      // API ile optimize rota al
+                      try {
+                        const response = await fetch('/api/optimize', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ start, end, stations: stationsData, batteryLevel })
+                        });
+                        const data = await response.json();
+                        setRoutePolyline(data.route);
+                        setRouteStations(data.stations);
+                      } catch (err) {
+                        alert('Rota optimizasyonu başarısız!');
+                      }
+                      setShowTravelModal(false);
+                    }}>
+                      Rota Hesapla
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
       {/* Filtre barı */}
       <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-40 pointer-events-auto w-full px-2 max-w-full overflow-x-auto">
         <div className="flex flex-nowrap gap-2 items-center bg-[#071022]/70 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-white/10 overflow-x-auto">
@@ -235,14 +403,21 @@ export default function MapView({ onStartCharge }: MapViewProps) {
           detectRetina={true}
         />
         <MarkerClusterGroup>
+          {/* Normal istasyonlar */}
           {filtered.map((s) => {
+            // Eğer rota aktifse, rota üzerindekileri farklı göster
+            const isOnRoute = routeStations.some(rs => rs.id === s.id);
             const b = getStationBrand(s.name);
-            const icon = makeDivIcon(b.logo, selectedStation?.id === s.id ? 72 : 52);
+            const icon = makeDivIcon(b.logo, selectedStation?.id === s.id ? 72 : isOnRoute ? 60 : 52);
             return (
               <Marker key={s.id} position={[s.lat, s.lng]} icon={icon as any} eventHandlers={{ click: () => setSelectedStation(s) }} />
             );
           })}
         </MarkerClusterGroup>
+        {/* Rota polyline mock */}
+        {routePolyline.length === 2 && (
+          <Polyline positions={routePolyline} color="#FFB100" weight={8} />
+        )}
         {/* Rota çizimi: kullanıcıdan seçili istasyona polyline */}
         {selectedStation && navMode && (
           <Polyline positions={[userLocation, [selectedStation.lat, selectedStation.lng]]} color="#07B1FF" weight={6} />
@@ -309,6 +484,13 @@ export default function MapView({ onStartCharge }: MapViewProps) {
               <button onClick={() => { showConfirm('Şarjı Başlat', `${selectedStation.name} istasyonunda şarj başlatılsın mı?`, () => onStartCharge && onStartCharge()); }} disabled={selectedStation.status !== 'AVAILABLE'} className={`flex-[2] py-3 rounded-xl font-bold ${selectedStation.status === 'AVAILABLE' ? 'bg-[#07B1FF] text-black' : 'bg-gray-600 text-white opacity-60 cursor-not-allowed'}`}>
                 Şarjı Başlat
               </button>
+            </div>
+            {/* Yorum, puanlama ve rezervasyon alanı */}
+            <div className="mt-6">
+              <h4 className="text-lg font-bold text-white mb-2">Yorumlar & Puanlama</h4>
+              <StationReviews stationId={selectedStation.id} />
+              <StationReservation stationId={selectedStation.id} user={"Ali"} />
+              <StationPayment stationId={selectedStation.id} userId={"1"} />
             </div>
           </div>
         </div>
